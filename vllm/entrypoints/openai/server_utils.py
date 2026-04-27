@@ -26,6 +26,10 @@ from vllm.entrypoints.openai.engine.protocol import (
     ErrorResponse,
     GenerationError,
 )
+from vllm.entrypoints.openai.response_trace import (
+    close_response_trace,
+    init_response_trace,
+)
 from vllm.entrypoints.utils import create_error_response, sanitize_message
 from vllm.exceptions import VLLMValidationError
 from vllm.logger import init_logger
@@ -446,6 +450,7 @@ _running_tasks: set[asyncio.Task] = set()
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     try:
+        init_response_trace()
         if app.state.log_stats:
             engine_client: EngineClient = app.state.engine_client
 
@@ -469,5 +474,6 @@ async def lifespan(app: FastAPI):
             if task is not None:
                 task.cancel()
     finally:
+        close_response_trace()
         # Ensure app state including engine ref is gc'd
         del app.state

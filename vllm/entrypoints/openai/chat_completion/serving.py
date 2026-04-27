@@ -58,6 +58,7 @@ from vllm.entrypoints.openai.parser.harmony_utils import (
     get_streamable_parser_for_assistant,
     parse_chat_output,
 )
+from vllm.entrypoints.openai.response_trace import trace_chunk
 from vllm.entrypoints.openai.utils import maybe_filter_parallel_tool_calls
 from vllm.entrypoints.utils import get_max_tokens, should_include_usage
 from vllm.inputs import EngineInput
@@ -661,6 +662,9 @@ class OpenAIServingChat(OpenAIServing):
                             cur_channel = "final"
                     else:
                         delta_text = output.text
+
+                    if delta_text:
+                        trace_chunk(delta_text)
 
                     if (
                         not delta_text

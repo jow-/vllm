@@ -31,6 +31,7 @@ from vllm.entrypoints.openai.engine.serving import (
     clamp_prompt_logprobs,
 )
 from vllm.entrypoints.openai.models.serving import OpenAIServingModels
+from vllm.entrypoints.openai.response_trace import trace_chunk
 from vllm.entrypoints.utils import get_max_tokens, should_include_usage
 from vllm.exceptions import VLLMValidationError
 from vllm.inputs import EngineInput
@@ -346,6 +347,9 @@ class OpenAIServingCompletion(OpenAIServing):
                         delta_text = output.text
                         delta_token_ids = output.token_ids
                         out_logprobs = output.logprobs
+
+                        if delta_text:
+                            trace_chunk(delta_text)
 
                         # has_echoed[i] is reused here to indicate whether
                         # we have already returned the prompt token IDs.
