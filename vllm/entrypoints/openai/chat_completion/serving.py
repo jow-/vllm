@@ -58,7 +58,7 @@ from vllm.entrypoints.openai.parser.harmony_utils import (
     get_streamable_parser_for_assistant,
     parse_chat_output,
 )
-from vllm.entrypoints.openai.response_trace import trace_chunk
+from vllm.entrypoints.openai.response_trace import trace_chunk, trace_parsed_chunk
 from vllm.entrypoints.openai.utils import maybe_filter_parallel_tool_calls
 from vllm.entrypoints.utils import get_max_tokens, should_include_usage
 from vllm.inputs import EngineInput
@@ -1084,6 +1084,7 @@ class OpenAIServingChat(OpenAIServing):
                         )
 
                     data = chunk.model_dump_json(exclude_unset=True)
+                    trace_parsed_chunk(f"data: {data}\n\n")
                     yield f"data: {data}\n\n"
 
             # once the final token is handled, if stream_options.include_usage
@@ -1112,6 +1113,7 @@ class OpenAIServingChat(OpenAIServing):
                 final_usage_data = final_usage_chunk.model_dump_json(
                     exclude_unset=True, exclude_none=True
                 )
+                trace_parsed_chunk(f"data: {final_usage_data}\n\n")
                 yield f"data: {final_usage_data}\n\n"
 
             # report to FastAPI middleware aggregate usage across all choices
